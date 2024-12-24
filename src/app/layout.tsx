@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Lora } from "next/font/google";
-import { Providers } from "@/context/providers";
 
 const lora = Lora({ subsets: ["latin"] });
 
@@ -19,7 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={lora.className}>
         <div className="infinity-watermark">∞</div>
-        <Providers>{children}</Providers>
+        {children}
       </body>
     </html>
   );
