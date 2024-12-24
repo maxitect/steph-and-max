@@ -1,6 +1,5 @@
 "use client";
 
-import { Box, Text, Grid } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 
 interface TimeLeft {
@@ -11,64 +10,71 @@ interface TimeLeft {
 }
 
 export default function CountdownTimer({ targetDate }: { targetDate: string }) {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [visibleUnits, setVisibleUnits] = useState<number>(0);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const difference = +new Date(targetDate) - +new Date();
+      let newTimeLeft: TimeLeft = {
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+      };
 
       if (difference > 0) {
-        setTimeLeft({
+        newTimeLeft = {
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
           hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
           minutes: Math.floor((difference / 1000 / 60) % 60),
           seconds: Math.floor((difference / 1000) % 60),
-        });
+        };
       }
+
+      setTimeLeft(newTimeLeft);
     };
 
-    const timer = setInterval(calculateTimeLeft, 1000);
     calculateTimeLeft();
-
+    const timer = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(timer);
   }, [targetDate]);
 
+  useEffect(() => {
+    if (timeLeft) {
+      const timer = setInterval(() => {
+        setVisibleUnits((prev) => (prev < 4 ? prev + 1 : prev));
+      }, 300);
+      return () => clearInterval(timer);
+    }
+  }, [timeLeft]);
+
+  const timeUnits = timeLeft
+    ? [
+        { label: "days", value: timeLeft.days },
+        { label: "hours", value: timeLeft.hours },
+        { label: "minutes", value: timeLeft.minutes },
+        { label: "seconds", value: timeLeft.seconds },
+      ]
+    : [];
+
+  if (!timeLeft) {
+    return null;
+  }
+
   return (
-    <Box textAlign="center">
-      <Text fontSize="2xl" mb={8}>
-        Until We Say I Do
-      </Text>
-      <Grid templateColumns="repeat(4, 1fr)" gap={4}>
-        <Box>
-          <Text fontSize="6xl" fontWeight="bold">
-            {timeLeft.days}
-          </Text>
-          <Text>Days</Text>
-        </Box>
-        <Box>
-          <Text fontSize="6xl" fontWeight="bold">
-            {timeLeft.hours}
-          </Text>
-          <Text>Hours</Text>
-        </Box>
-        <Box>
-          <Text fontSize="6xl" fontWeight="bold">
-            {timeLeft.minutes}
-          </Text>
-          <Text>Minutes</Text>
-        </Box>
-        <Box>
-          <Text fontSize="6xl" fontWeight="bold">
-            {timeLeft.seconds}
-          </Text>
-          <Text>Seconds</Text>
-        </Box>
-      </Grid>
-    </Box>
+    <div className="grid grid-cols-4 gap-4 text-center">
+      {timeUnits.map((unit, index) => (
+        <div
+          key={unit.label}
+          className={`transition-opacity duration-700 ${
+            index < visibleUnits ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="text-6xl font-bold">{unit.value}</div>
+          <div className="text-xl">{unit.label}</div>
+        </div>
+      ))}
+    </div>
   );
 }
