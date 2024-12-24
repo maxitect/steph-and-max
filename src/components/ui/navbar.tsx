@@ -1,34 +1,32 @@
-"use client";
-
-import { Box, Flex, Link } from "@chakra-ui/react";
+import Link from "next/link";
 
 export default function Navbar() {
   return (
-    <Box
-      bg="white"
-      borderBottom="1px"
-      borderColor="gray.200"
-      position="fixed"
-      w="100%"
-      zIndex={999}
-    >
-      <Flex
-        maxW="7xl"
-        mx="auto"
-        px={4}
-        h={16}
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <Flex gap={8}>
-          <Link href="/wedding-day">The Wedding Day</Link>
-          <Link href="/location">Location</Link>
-          <Link href="/accommodation">Accommodation</Link>
-          <Link href="/rsvp">RSVP</Link>
-          <Link href="/gifting">Gifting</Link>
-          <Link href="/faq">FAQ</Link>
-        </Flex>
-      </Flex>
-    </Box>
+    <nav className="bg-white border-b border-gray-200 fixed w-full z-50">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex justify-between h-16">
+          <div className="flex space-x-8">
+            <Link href="/wedding-day" className="flex items-center">
+              The Wedding Day
+            </Link>
+            <Link href="/location" className="flex items-center">
+              Location
+            </Link>
+            <Link href="/accommodation" className="flex items-center">
+              Accommodation
+            </Link>
+            <Link href="/rsvp" className="flex items-center">
+              RSVP
+            </Link>
+            <Link href="/gifting" className="flex items-center">
+              Gifting
+            </Link>
+            <Link href="/faq" className="flex items-center">
+              FAQ
+            </Link>
+          </div>
+        </div>
+      </div>
+    </nav>
   );
 }
