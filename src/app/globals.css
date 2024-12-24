@@ -1,21 +1,45 @@
+@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+body {
+  @apply bg-orange-200 text-black;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.infinity-watermark {
+  @apply fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[40vw] text-gray-200 opacity-20 pointer-events-none z-0;
+}
+
+@keyframes pan {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-5%, -5%);
+  }
+  100% {
+    transform: translate(0, 0);
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+.animate-pan {
+  animation: pan 10s ease-in-out infinite;
+}
+
+@keyframes rotateToInfinity {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+}
+
+.animate-rotate-infinity {
+  animation: rotateToInfinity 1s ease-out forwards;
 }
