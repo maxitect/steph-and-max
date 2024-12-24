@@ -1,169 +1,93 @@
 "use client";
 
-import { Box, Text, Button, Flex } from "@chakra-ui/react";
-import { css, keyframes } from "@emotion/react";
-import { ParallaxProvider, Parallax } from "react-scroll-parallax";
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Navbar from "@/components/ui/navbar";
-import CountdownTimer from "@/components/ui/countdown-timer";
-
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-const scaleIn = keyframes`
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-`;
+import NumberAnimation from "@/components/ui/number-animation";
 
 export default function Home() {
-  const [showIntro, setShowIntro] = useState(true);
+  const router = useRouter();
   const [currentYear, setCurrentYear] = useState(1);
   const [showInfinity, setShowInfinity] = useState(false);
-  const [showNames, setShowNames] = useState(false);
-  const [showMainContent, setShowMainContent] = useState(false);
-  const [infinityRotation, setInfinityRotation] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const introRef = useRef<HTMLDivElement>(null);
 
   const photos = [
-    { year: 2017, src: "/images/2017.jpg", date: "June 2017" },
-    { year: 2018, src: "/images/2018.jpg", date: "November 2018" },
-    { year: 2019, src: "/images/2019.jpg", date: "May 2019" },
-    { year: 2020, src: "/images/2020.jpg", date: "September 2020" },
-    { year: 2021, src: "/images/2021.jpg", date: "September 2021" },
-    { year: 2022, src: "/images/2022.jpg", date: "July 2022" },
-    { year: 2023, src: "/images/2023.jpg", date: "July 2023" },
-    { year: 2024, src: "/images/2024.jpg", date: "January 2024" },
+    "/images/2017.jpg",
+    "/images/2018.jpg",
+    "/images/2019.jpg",
+    "/images/2020.jpg",
+    "/images/2021.jpg",
+    "/images/2022.jpg",
+    "/images/2023.jpg",
+    "/images/2024.jpg",
   ];
 
   const skipIntro = () => {
-    setShowIntro(false);
-    setShowMainContent(true);
+    router.push("/home");
   };
 
   useEffect(() => {
-    if (showInfinity) {
-      const timer = setTimeout(() => {
-        setInfinityRotation(90);
-        setTimeout(() => setShowNames(true), 1000);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [showInfinity]);
+    const handleScroll = () => {
+      if (introRef.current) {
+        const scrollPosition = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const fullHeight = introRef.current.scrollHeight;
+        const progress = scrollPosition / (fullHeight - windowHeight);
+        setScrollProgress(progress);
+
+        const yearIndex = Math.min(
+          Math.floor(progress * photos.length),
+          photos.length - 1
+        );
+        setCurrentYear(yearIndex + 1);
+
+        if (progress >= 0.95 && !showInfinity) {
+          setShowInfinity(true);
+          setTimeout(() => {
+            router.push("/home");
+          }, 2000);
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [photos.length, showInfinity, router]);
 
   return (
-    <ParallaxProvider>
-      {showIntro ? (
-        <Box h="100vh" overflow="auto" position="relative">
-          <Button
-            position="fixed"
-            bottom="4"
-            right="4"
-            zIndex={999}
-            onClick={skipIntro}
-            colorScheme="blackAlpha"
+    <div>
+      <div ref={introRef} className="h-[800vh] overflow-hidden">
+        {photos.map((src, index) => (
+          <div
+            key={index}
+            className="h-screen sticky top-0 overflow-hidden flex items-center justify-center"
           >
-            Skip Intro
-          </Button>
+            <div className="w-[80vmin] h-[80vmin] relative overflow-hidden">
+              <Image
+                src={src}
+                alt={`Year ${2017 + index}`}
+                layout="fill"
+                objectFit="cover"
+                className="animate-pan"
+              />
+            </div>
+          </div>
+        ))}
 
-          {photos.map((photo, index) => (
-            <Parallax
-              key={photo.year}
-              speed={-10}
-              onProgressChange={(progress) => {
-                if (progress > 0.5) setCurrentYear(index + 1);
-                if (progress > 0.9 && index === photos.length - 1) {
-                  setShowInfinity(true);
-                }
-              }}
-            >
-              <Box h="100vh" position="relative" overflow="hidden">
-                <Image
-                  src={photo.src}
-                  alt={`Year ${photo.year}`}
-                  fill
-                  style={{ objectFit: "cover" }}
-                />
-                <Box
-                  position="absolute"
-                  bottom="10%"
-                  left="10%"
-                  color="white"
-                  textShadow="2px 2px 4px rgba(0,0,0,0.5)"
-                >
-                  <Text fontSize="2xl">{photo.date}</Text>
-                </Box>
-              </Box>
-            </Parallax>
-          ))}
+        <NumberAnimation
+          scrollProgress={scrollProgress}
+          currentYear={currentYear}
+          isRotating={showInfinity}
+        />
 
-          {showInfinity && (
-            <Box
-              position="fixed"
-              top="50%"
-              left="50%"
-              fontSize="15rem"
-              color="white"
-              textShadow="2px 2px 4px rgba(0,0,0,0.5)"
-              css={css`
-                animation: ${scaleIn} 1s ease-out;
-                transform: translate(-50%, -50%) rotate(${infinityRotation}deg);
-                transition: transform 1s ease-in-out;
-              `}
-            >
-              ∞
-            </Box>
-          )}
-
-          {showNames && (
-            <Box
-              position="fixed"
-              top="60%"
-              left="50%"
-              transform="translate(-50%, -50%)"
-              textAlign="center"
-              color="white"
-              textShadow="2px 2px 4px rgba(0,0,0,0.5)"
-              css={css`
-                animation: ${fadeIn} 1s ease-out;
-              `}
-            >
-              <Text fontSize="6xl">Steph & Max</Text>
-            </Box>
-          )}
-
-          <Box
-            position="fixed"
-            top="50%"
-            left="10%"
-            transform="translateY(-50%)"
-            fontSize="20rem"
-            color="white"
-            textShadow="2px 2px 4px rgba(0,0,0,0.5)"
-            opacity={0.5}
-          >
-            {currentYear}
-          </Box>
-        </Box>
-      ) : null}
-
-      {showMainContent && (
-        <Flex direction="column" minH="100vh">
-          <Navbar />
-          <Box flex="1" position="relative">
-            <Box
-              position="absolute"
-              top="50%"
-              left="50%"
-              transform="translate(-50%, -50%)"
-              textAlign="center"
-            >
-              <CountdownTimer targetDate="2025-10-18" />
-            </Box>
-          </Box>
-        </Flex>
-      )}
-    </ParallaxProvider>
+        <button
+          className="fixed bottom-5 right-5 px-4 py-2 bg-white bg-opacity-20 text-white border border-white rounded hover:bg-opacity-30 transition-colors duration-200"
+          onClick={skipIntro}
+        >
+          Skip Intro
+        </button>
+      </div>
+    </div>
   );
 }
